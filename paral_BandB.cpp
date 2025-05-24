@@ -12,7 +12,7 @@ using namespace std;
 struct Item {
     int weight;
     int value;
-    double ratio; // value per weight ratio
+    double ratio; 
 };
 
 struct Node {
@@ -22,12 +22,10 @@ struct Node {
     double bound;
 };
 
-// Сравнение для сортировки предметов по удельной стоимости
 bool compareItems(const Item &a, const Item &b) {
     return a.ratio > b.ratio;
 }
 
-// Функция для вычисления верхней границы
 double bound(Node u, int n, int W, const vector<Item> &items) {
     if (u.weight >= W)
         return 0;
@@ -48,13 +46,11 @@ double bound(Node u, int n, int W, const vector<Item> &items) {
     return profit_bound;
 }
 
-// Глобальные переменные для многопоточной версии
 atomic<int> max_profit(0);
 mutex mtx;
 queue<Node> task_queue;
 atomic<bool> done(false);
 
-// Потоковая функция для обработки задач
 void knapsack_thread(int n, int W, const vector<Item> &items) {
     while (!done) {
         Node u;
@@ -118,9 +114,7 @@ void knapsack_thread(int n, int W, const vector<Item> &items) {
     }
 }
 
-// Основная функция для решения задачи о рюкзаке
 int knapsack(int W, vector<Item> &items) {
-    // Сортируем предметы по удельному весу (value/weight)
     for (auto &item : items) {
         item.ratio = (double)item.value / item.weight;
     }
@@ -128,7 +122,6 @@ int knapsack(int W, vector<Item> &items) {
     
     int n = items.size();
     
-    // Инициализация корневого узла
     Node u;
     u.level = -1;
     u.profit = 0;
@@ -137,7 +130,6 @@ int knapsack(int W, vector<Item> &items) {
     
     task_queue.push(u);
     
-    // Создаем потоки
     unsigned num_threads = 8;
     vector<thread> threads;
     
@@ -145,7 +137,6 @@ int knapsack(int W, vector<Item> &items) {
         threads.emplace_back(knapsack_thread, n, W, items);
     }
     
-    // Ждем пока очередь не опустеет и все потоки завершат работу
     while (true) {
         {
             lock_guard<mutex> lock(mtx);
